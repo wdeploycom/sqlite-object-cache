@@ -1,0 +1,75 @@
+name: Tests
+
+on:
+  push:
+    branches: [ trunk, main ]
+  pull_request:
+    branches: [ trunk, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php: [8.3, 8.4]
+        dependencies: [lowest, highest]
+    
+    name: PHP ${{ matrix.php }} - ${{ matrix.dependencies }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: sqlite3, apcu, igbinary
+        coverage: xdebug
+    
+    - name: Validate composer.json
+      run: composer validate --strict
+    
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php }}-${{ matrix.dependencies }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php }}-${{ matrix.dependencies }}-
+    
+    - name: Install dependencies
+      run: |
+        if [[ "${{ matrix.dependencies }}" == "lowest" ]]; then
+          composer update --prefer-lowest --no-interaction --no-progress
+        else
+          composer install --no-interaction --no-progress
+        fi
+    
+    - name: Run code sniffer
+      run: composer run phpcs
+    
+    - name: Run PHPStan
+      run: composer run phpstan
+    
+    - name: Run PHPMD
+      run: composer run phpmd
+      continue-on-error: true
+    
+    - name: Run unit tests
+      run: composer run test:unit
+    
+    - name: Run integration tests
+      run: composer run test:integration
+    
+    - name: Generate coverage report
+      run: composer run test:coverage
+      if: matrix.php == '8.3' && matrix.dependencies == 'highest'
+    
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      if: matrix.php == '8.3' && matrix.dependencies == 'highest'
+      with:
+        file: ./tests/coverage/clover.xml
+        fail_ci_if_error: false

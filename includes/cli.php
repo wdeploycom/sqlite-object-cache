@@ -41,7 +41,7 @@ class SQLite_Object_Cache_CLI extends WP_CLI_Command {
     $force_serialize = defined( 'WP_SQLITE_OBJECT_CACHE_SERIALIZE' ) && WP_SQLITE_OBJECT_CACHE_SERIALIZE;
     $igbinary        .= $force_serialize ? esc_html__( '(disabled by WP_SQLITE_OBJECT_CACHE_SERIALIZE)', 'sqlite-object-cache' ) : '';
 
-    if ( method_exists( $wp_object_cache, 'sqlite_get_version' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_get_version' ) ) {
       $msg = sprintf(
       /* translators: 1: version for sqlite  2: version for plugin  3: igbinary  --- for WP-CLI */
         __( 'Versions: Plugin: %2$s  SQLite: %1$s  igbinary: %3$s.', 'sqlite-object-cache' ),
@@ -76,7 +76,7 @@ class SQLite_Object_Cache_CLI extends WP_CLI_Command {
   function status( $args, $assoc_args ) {
     $this->setupCliEnvironment( $args, $assoc_args );
     global $wp_object_cache;
-    if ( method_exists( $wp_object_cache, 'sqlite_sizes' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_sizes' ) ) {
 
       $sizes = $wp_object_cache->sqlite_sizes();
       $msgs  = array();
@@ -271,7 +271,7 @@ class SQLite_Object_Cache_CLI extends WP_CLI_Command {
    */
   function flush( $args, $assoc_args ) {
     global $wp_object_cache;
-    if ( method_exists( $wp_object_cache, 'flush' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'flush' ) ) {
       try {
         $this->enter_maintenance_mode();
         $wp_object_cache->flush( true );
@@ -286,7 +286,7 @@ class SQLite_Object_Cache_CLI extends WP_CLI_Command {
    */
   function vacuum( $args, $assoc_args ) {
     global $wp_object_cache;
-    if ( method_exists( $wp_object_cache, 'vacuum' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'vacuum' ) ) {
       try {
         $this->enter_maintenance_mode();
         $wp_object_cache->vacuum();
@@ -306,7 +306,7 @@ class SQLite_Object_Cache_CLI extends WP_CLI_Command {
     $threshold_size = (int) ( $target_size );
 
     global $wp_object_cache;
-    if ( ! method_exists( $wp_object_cache, 'sqlite_get_size' ) ) {
+    if ( ! $wp_object_cache || ! method_exists( $wp_object_cache, 'sqlite_get_size' ) ) {
       return;
     }
 

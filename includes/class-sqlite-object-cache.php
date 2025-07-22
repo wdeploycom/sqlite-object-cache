@@ -19,46 +19,28 @@ class SQLite_Object_Cache {
 
   /**
    * Local instance of SQLite_Object_Cache_Admin_API
-   *
-   * @var SQLite_Object_Cache_Admin_API|null
    */
-  public $admin;
+  public ?SQLite_Object_Cache_Admin_API $admin = null;
 
   /**
    * Settings class object
-   *
-   * @var     object
-   * @access  public
-   * @since   1.0.0
    */
-  public $settings;
+  public ?object $settings = null;
 
   /**
    * The version number.
-   *
-   * @var     string
-   * @access  public
-   * @since   1.0.0
    */
-  public $_version;
+  public string $_version;
 
   /**
    * The token.
-   *
-   * @var     string
-   * @access  public
-   * @since   1.0.0
    */
-  public $_token;
+  public string $_token;
 
   /**
    * The main plugin file.
-   *
-   * @var     string
-   * @access  public
-   * @since   1.0.0
    */
-  public $file;
+  public string $file;
 
   /**
    * The main plugin directory.
@@ -110,10 +92,8 @@ class SQLite_Object_Cache {
 
   /**
    * Minimum required sqlite version.
-   *
-   * @var string
    */
-  public $minimum_sqlite_version = '3.7.0';
+  public string $minimum_sqlite_version = '3.7.0';
 
   /**
    * Constructor function.
@@ -121,7 +101,7 @@ class SQLite_Object_Cache {
    * @param string $file File constructor.
    * @param string $version Plugin version.
    */
-  public function __construct( $file = '', $version = '1.5.6' ) {
+  public function __construct( string $file = '', string $version = '1.5.6' ) {
     $this->_version = $version;
     $this->_token   = 'sqlite_object_cache';
 
@@ -137,8 +117,8 @@ class SQLite_Object_Cache {
 
     $this->script_suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-    register_activation_hook( $this->file, array( $this, 'on_activation' ) );
-    register_deactivation_hook( $this->file, array( $this, 'on_deactivation' ) );
+    register_activation_hook( $this->file, [ $this, 'on_activation' ] );
+    register_deactivation_hook( $this->file, [ $this, 'on_deactivation' ] );
 
     if ( is_admin() ) {
       // Load API for generic admin functions.
@@ -147,10 +127,10 @@ class SQLite_Object_Cache {
       new SQLite_Backup_Exclusion();
     }
 
-    add_action( 'admin_init', array( $this, 'maybe_update_dropin' ) );
+    add_action( 'admin_init', [ $this, 'maybe_update_dropin' ] );
 
     /* handle cron cache cleanup */
-    add_action( self::CLEAN_EVENT_HOOK, array( $this, 'clean_job' ), 10, 0 );
+    add_action( self::CLEAN_EVENT_HOOK, [ $this, 'clean_job' ], 10, 0 );
     if ( ! wp_next_scheduled( self::CLEAN_EVENT_HOOK ) ) {
       wp_schedule_event( time() + HOUR_IN_SECONDS, 'hourly', self::CLEAN_EVENT_HOOK );
     }
@@ -169,14 +149,14 @@ class SQLite_Object_Cache {
    *
    * @return void
    */
-  public function clean_job( $grace_factor = 1.0 ) {
-    $option         = get_option( $this->_token . '_settings', array() );
+  public function clean_job( float $grace_factor = 1.0 ): void {
+    $option         = get_option( $this->_token . '_settings', [] );
     $target_size    = empty ( $option['target_size'] ) ? 16 : $option['target_size'];
     $target_size    *= ( 1024 * 1024 );
     $threshold_size = (int) ( $target_size * $grace_factor );
 
     global $wp_object_cache;
-    if ( ! method_exists( $wp_object_cache, 'sqlite_get_size' ) ) {
+    if ( ! $wp_object_cache || ! method_exists( $wp_object_cache, 'sqlite_get_size' ) ) {
       return;
     }
     /* Clean up old statistics. Do this even when the cache is not over size. */
@@ -209,11 +189,11 @@ class SQLite_Object_Cache {
    *
    * @return void
    */
-  public function on_activation() {
+  public function on_activation(): void {
 
     $this->sync_apcu_global_to_option( true );
     if ( true === $this->has_sqlite() ) {
-      add_action( 'shutdown', array( $this, 'update_dropin' ) );
+      add_action( 'shutdown', [ $this, 'update_dropin' ] );
     }
   }
 
@@ -222,7 +202,7 @@ class SQLite_Object_Cache {
    *
    * @return bool|string true, or an error message.
    */
-  public function has_sqlite() {
+  public function has_sqlite(): bool|string {
     if ( ! class_exists( 'SQLite3' ) || ! extension_loaded( 'sqlite3' ) ) {
       return __( 'You cannot use the SQLite Object Cache plugin. Your server does not have php\'s SQLite3 extension installed.', 'sqlite-object-cache' );
     }
@@ -243,7 +223,7 @@ class SQLite_Object_Cache {
    *
    * @return string|false  SQLite's version number.
    */
-  public function sqlite_get_version() {
+  public function sqlite_get_version(): string|false {
 
     if ( class_exists( 'SQLite3' ) ) {
       $version = SQLite3::version();
@@ -290,7 +270,7 @@ class SQLite_Object_Cache {
       return new WP_Error( 'exists', __( 'Copied test file doesn’t exist.', 'sqlite-object-cache' ) );
     }
 
-    $meta = get_file_data( $testfiledest, array( 'Version' => 'Version' ) );
+    $meta = get_file_data( $testfiledest, [ 'Version' => 'Version' ] );
 
     if ( $meta['Version'] !== $this->_version ) {
       return new WP_Error( 'version', __( 'Couldn’t verify test file contents.', 'sqlite-object-cache' ) );
@@ -355,7 +335,7 @@ class SQLite_Object_Cache {
 
     $has = $this->has_sqlite();
     if ( ( true === $has ) && $this->object_cache_dropin_needs_updating() ) {
-      add_action( 'shutdown', array( $this, 'update_dropin' ) );
+      add_action( 'shutdown', [ $this, 'update_dropin' ] );
     }
   }
 
@@ -367,7 +347,7 @@ class SQLite_Object_Cache {
    */
   public function object_cache_dropin_needs_updating() {
     global $wp_object_cache;
-    if ( ! method_exists( $wp_object_cache, 'dropin_get_version' ) ) {
+    if ( ! $wp_object_cache || ! method_exists( $wp_object_cache, 'dropin_get_version' ) ) {
       return true;
     }
     return version_compare( $wp_object_cache->dropin_get_version(), $this->_version, '<' );
@@ -406,7 +386,7 @@ class SQLite_Object_Cache {
   public function validate_object_cache_dropin() {
     global $wp_object_cache;
 
-    if ( ! method_exists( $wp_object_cache, 'dropin_get_version' ) ) {
+    if ( ! $wp_object_cache || ! method_exists( $wp_object_cache, 'dropin_get_version' ) ) {
       return false;
     }
 
@@ -451,7 +431,7 @@ class SQLite_Object_Cache {
     global $wp_filesystem;
     global $wp_object_cache;
 
-    if ( method_exists( $wp_object_cache, 'sqlite_files' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_files' ) ) {
       if ( $this->initialize_filesystem( '', true ) ) {
         foreach ( $wp_object_cache->sqlite_files() as $file ) {
           $wp_filesystem->delete( $file );
@@ -474,7 +454,7 @@ class SQLite_Object_Cache {
   /**
    * @return bool True if APCu support is activated for this plugin.
    */
-  public function apcu_is_activated() {
+  public function apcu_is_activated(): bool {
     return defined( 'WP_SQLITE_OBJECT_CACHE_APCU' ) && WP_SQLITE_OBJECT_CACHE_APCU
            && $this->apcu_extension_is_enabled();
   }
@@ -482,7 +462,7 @@ class SQLite_Object_Cache {
   /**
    * @return bool True if the APCu extension is loaded and enabled.
    */
-  public function apcu_extension_is_enabled() {
+  public function apcu_extension_is_enabled(): bool {
     return function_exists( 'apcu_enabled' ) && apcu_enabled();
   }
 
@@ -495,7 +475,7 @@ class SQLite_Object_Cache {
    */
   public function sync_apcu_global_to_option( $unconditional = true ) {
     global $wp_object_cache;
-    $option       = get_option( $this->_token . '_settings', array() );
+    $option       = get_option( $this->_token . '_settings', [] );
     $option_dirty = false;
     $updated_flag = array_key_exists( 'use_apcu_updated', $option );
     $use_apcu     = array_key_exists( 'use_apcu', $option ) && 'on' === $option['use_apcu'] ? 'on' : 'off';
@@ -512,7 +492,7 @@ class SQLite_Object_Cache {
       $option_dirty       = true;
     }
     if ( $option_dirty ) {
-      if ( method_exists( $wp_object_cache, 'apcu-clear_cache' ) ) {
+      if ( $wp_object_cache && method_exists( $wp_object_cache, 'apcu-clear_cache' ) ) {
         $wp_object_cache->apcu_clear_cache();
       }
       update_option( $this->_token . '_settings', $option, true );

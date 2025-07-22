@@ -86,11 +86,11 @@ class SQLite_Object_Cache_Statistics {
     $APCustore             = array();
 
 
-    if ( ! method_exists( $wp_object_cache, 'sqlite_load_statistics' ) ) {
+    if ( ! $wp_object_cache || ! method_exists( $wp_object_cache, 'sqlite_load_statistics' ) ) {
       return;
     }
 
-    if ( method_exists( $wp_object_cache, 'sqlite_remove_expired' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_remove_expired' ) ) {
       $wp_object_cache->sqlite_remove_expired();
     }
 
@@ -509,7 +509,7 @@ class SQLite_Object_Cache_Statistics {
   public function render_usage() {
 
     global $wp_object_cache;
-    if ( ! method_exists( $wp_object_cache, 'sqlite_load_usages' ) ) {
+    if ( ! $wp_object_cache || ! method_exists( $wp_object_cache, 'sqlite_load_usages' ) ) {
       return;
     }
 
@@ -569,7 +569,7 @@ class SQLite_Object_Cache_Statistics {
       echo '<th scope="col" class="right">' . esc_html__( 'Size', 'sqlite-object-cache' ) . '</th>';
       echo '</tr></thead><tbody>' . PHP_EOL;
 
-      if ( method_exists( $wp_object_cache, 'sqlite_sizes' ) ) {
+      if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_sizes' ) ) {
         $sizes     = $wp_object_cache->sqlite_sizes();
         $pagesize  = $sizes['page_size'];
         $filesize  = $sizes['total_pages'];

@@ -1,0 +1,27 @@
+{
+  "name": "sqlite-object-cache",
+  "version": "1.5.6",
+  "description": "A fast persistent object cache backend for WordPress, powered by SQLite and accelerated by APCu",
+  "scripts": {
+    "wp-env": "wp-env",
+    "wp-env:start": "wp-env start",
+    "wp-env:stop": "wp-env stop",
+    "wp-env:clean": "wp-env clean all",
+    "test": "wp-env run tests-cli --env-cwd=wp-content/plugins/sqlite-object-cache phpunit",
+    "test:watch": "wp-env run tests-cli --env-cwd=wp-content/plugins/sqlite-object-cache phpunit --watch",
+    "test:run": "wp-env run tests-cli --env-cwd=wp-content/plugins/sqlite-object-cache phpunit"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^10.7.0"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "cache",
+    "sqlite",
+    "performance",
+    "apcu"
+  ],
+  "author": "Oliver Jones",
+  "license": "GPL-2.0-or-later"
+}

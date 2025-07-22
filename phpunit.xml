@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    testdox="true"
+    cacheDirectory=".phpunit.cache"
+    executionOrder="depends,defects"
+    beStrictAboutOutputDuringTests="false"
+    failOnWarning="false">
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>includes</directory>
+            <directory>assets/drop-in</directory>
+            <file>sqlite-object-cache.php</file>
+        </include>
+        <exclude>
+            <directory>tests</directory>
+            <directory>languages</directory>
+            <directory>vendor</directory>
+        </exclude>
+    </source>
+
+    <coverage>
+        <report>
+            <html outputDirectory="tests/coverage/html"/>
+            <text outputFile="tests/coverage/coverage.txt"/>
+            <clover outputFile="tests/coverage/clover.xml"/>
+        </report>
+    </coverage>
+
+    <php>
+        <!-- Plugin-specific test constants -->
+        <const name="SQLITE_OBJECT_CACHE_TEST_MODE" value="true"/>
+        
+        <!-- wp-env environment detection -->
+        <env name="WP_ENV" value="testing"/>
+        <env name="WP_ENVIRONMENT_TYPE" value="local"/>
+        
+        <!-- WordPress test configuration (only set if not already defined) -->
+        <env name="WP_TESTS_DIR" value=""/>
+    </php>
+</phpunit>

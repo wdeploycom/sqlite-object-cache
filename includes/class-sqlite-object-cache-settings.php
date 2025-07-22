@@ -55,7 +55,7 @@ class SQLite_Object_Cache_Settings {
    * @param object $parent Parent object.
    * @param string $plugin_file Plugin top-level file name.
    */
-  public function __construct( $parent, $plugin_file ) {
+  public function __construct( object $parent, string $plugin_file ) {
     $this->parent      = $parent;
     $this->has         = $parent->has_sqlite();
     $this->base        = 'sqlite_object_cache_';
@@ -94,7 +94,7 @@ class SQLite_Object_Cache_Settings {
    *
    * @return array<int, string> Updated array of the plugin's metadata.
    */
-  public function filter_plugin_row_meta( array $plugin_meta, $plugin_file ) {
+  public function filter_plugin_row_meta( array $plugin_meta, string $plugin_file ): array {
     if ( $this->plugin_file !== $plugin_file ) {
       return $plugin_meta;
     }
@@ -243,7 +243,7 @@ class SQLite_Object_Cache_Settings {
       $apcu_choice = array_key_exists( 'use_apcu', $option ) && $option ['use_apcu'] === 'on';
       $apcu_former = array_key_exists( 'use_apcu', $former_value ) && $former_value ['use_apcu'] === 'on';
       if ( $apcu_choice !== $apcu_former ) {
-        if ( method_exists( $wp_object_cache, 'apcu_clear_cache' ) ) {
+        if ( $wp_object_cache && method_exists( $wp_object_cache, 'apcu_clear_cache' ) ) {
           $wp_object_cache->apcu_clear_cache();
         }
         $this->update_wp_config_constant( 'WP_SQLITE_OBJECT_CACHE_APCU', $apcu_choice );
@@ -252,7 +252,7 @@ class SQLite_Object_Cache_Settings {
       $option['use_apcu'] = $apcu_choice ? 'on' : 'off';
     }
     if ( array_key_exists( 'flush', $option ) && $option ['flush'] === 'on' ) {
-      if ( method_exists( $wp_object_cache, 'flush' ) ) {
+      if ( $wp_object_cache && method_exists( $wp_object_cache, 'flush' ) ) {
         try {
           $this->enter_maintenance_mode();
           $wp_object_cache->flush( true );
@@ -265,7 +265,7 @@ class SQLite_Object_Cache_Settings {
       unset ( $option['flush'] );
     }
     if ( array_key_exists( 'vacuum', $option ) && $option ['vacuum'] === 'on' ) {
-      if ( method_exists( $wp_object_cache, 'vacuum' ) ) {
+      if ( $wp_object_cache && method_exists( $wp_object_cache, 'vacuum' ) ) {
         try {
           $this->enter_maintenance_mode();
           $wp_object_cache->vacuum();
@@ -330,7 +330,7 @@ class SQLite_Object_Cache_Settings {
   public function validate_reset_stats( $option, $name, $original_value ) {
 
     global $wp_object_cache;
-    if ( method_exists( $wp_object_cache, 'sqlite_reset_statistics' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_reset_statistics' ) ) {
       $wp_object_cache->sqlite_reset_statistics();
     }
 
@@ -548,7 +548,7 @@ class SQLite_Object_Cache_Settings {
     $this->apcu_admonition();
     $this->versions();
 
-    if ( array_key_exists( 'description', $this->settings[ $section['id'] ] ) ) {
+    if ( is_array( $this->settings[ $section['id'] ] ) && array_key_exists( 'description', $this->settings[ $section['id'] ] ) ) {
       echo '<p> ' . esc_html( $this->settings[ $section['id'] ]['description'] ) . '</p>' . PHP_EOL;
     }
   }
@@ -627,7 +627,7 @@ class SQLite_Object_Cache_Settings {
       ? phpversion( "apcu" )
       : __( 'unavailable', 'sqlite-object-cache' );
 
-    if ( method_exists( $wp_object_cache, 'sqlite_get_version' ) ) {
+    if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_get_version' ) ) {
       echo '<p>' . esc_html( sprintf(
         /* translators: 1: version for sqlite   2: version for php  3: webserver version 4: version for plugin  5: igbinary  6:APCu  7:WordPress */
           __( 'Versions: WordPress: %7$s  SQLite: %1$s  php: %2$s  Server: %3$s Plugin: %4$s  APCu: %6$s  igbinary: %5$s.', 'sqlite-object-cache' ),
@@ -908,7 +908,7 @@ class SQLite_Object_Cache_Settings {
 
     try {
       global $wp_object_cache;
-      if ( method_exists( $wp_object_cache, 'sqlite_sizes' ) ) {
+      if ( $wp_object_cache && method_exists( $wp_object_cache, 'sqlite_sizes' ) ) {
         $stanza['fields']['sqlite_sizes'] = array(
           'label' => __( 'SQLite utilization', 'sqlite-object-cache' ),
           'value' => $this->flatten( $wp_object_cache->sqlite_sizes() ),

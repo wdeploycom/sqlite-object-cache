@@ -1,0 +1,38 @@
+parameters:
+    level: 5
+    paths:
+        - includes/
+        - sqlite-object-cache.php
+        - assets/drop-in/object-cache.php
+    
+    excludePaths:
+        - tests/
+        - vendor/
+    
+    # Bootstrap files for WordPress functions
+    bootstrapFiles:
+        - tests/bootstrap.php
+    
+    # Ignore WordPress function definitions
+    ignoreErrors:
+        # WordPress functions that may not be defined in static analysis
+        - '#Function (add_action|add_filter|register_activation_hook|register_deactivation_hook|wp_schedule_event|wp_next_scheduled|wp_unschedule_hook|get_option|update_option|__) not found#'
+        - '#Function (esc_html__|esc_url|trailingslashit|plugin_basename|plugins_url|get_plugin_data|get_file_data|is_admin|apply_filters|do_action) not found#'
+        - '#Function (wp_cache_flush|request_filesystem_credentials|WP_Filesystem|require_once) not found#'
+        
+        # WordPress constants
+        - '#Constant (ABSPATH|WP_CONTENT_DIR|WP_PLUGIN_DIR|HOUR_IN_SECONDS|FS_CHMOD_FILE) not found#'
+        
+        # WordPress classes
+        - '#Class (WP_Error|WP_Filesystem_Base) not found#'
+        
+        # Global variables used by WordPress
+        - '#Variable \$wp_filesystem might not be defined#'
+        - '#Variable \$wp_object_cache might not be defined#'
+        
+        # Method calls on potentially undefined objects
+        - '#Cannot call method .* on SQLite_Object_Cache_Admin_API\|null#'
+        
+    # Additional settings
+    checkGenericClassInNonGenericObjectType: false
+    checkMissingIterableValueType: false

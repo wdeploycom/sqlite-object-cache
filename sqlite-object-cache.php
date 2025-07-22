@@ -7,7 +7,7 @@
  * Author: Oliver Jones
  * Author URI: https://github.com/OllieJones/
  * Requires at least: 5.5
- * Requires PHP: 5.6
+ * Requires PHP: 8.3
  * Tested up to: 6.8
  *
  * Text Domain: sqlite-object-cache

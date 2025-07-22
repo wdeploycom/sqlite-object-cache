@@ -9,7 +9,7 @@
  * Author URI: https://plumislandmedia.net
  * License: GPLv2+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Requires PHP: 5.6
+ * Requires PHP: 8.3
  * Tested up to: 6.8
  * Stable tag: 1.5.6
  *
@@ -44,19 +44,7 @@ use JetBrains\PhpStorm\NoReturn;
 
 defined( '\\ABSPATH' ) || exit;
 
-/**
- * hrtime polyfill if needed, pre php 7.3.
- */
-if ( ! function_exists( 'hrtime' ) ) {
-  function hrtime( $as_float = false ) {
-    if ( $as_float ) {
-      return microtime( true ) * 1000;
-    }
-    $result    = microtime( false );
-    $result[1] = 1000 * $result [1];
-    return $result;
-  }
-}
+// hrtime polyfill removed - not needed for PHP 8.3+
 
 // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact, Generic.WhiteSpace.ScopeIndent.Incorrect
 if ( ! defined( 'WP_SQLITE_OBJECT_CACHE_DISABLED' ) || ! WP_SQLITE_OBJECT_CACHE_DISABLED ) :
@@ -179,23 +167,23 @@ if ( ! defined( 'WP_SQLITE_OBJECT_CACHE_DISABLED' ) || ! WP_SQLITE_OBJECT_CACHE_
      *
      * @var array
      */
-    public $unflushable_groups = array();
+    public $unflushable_groups = [];
     /**
      * List of groups not saved to cache.
      *
      * @var array
      */
-    public $ignored_groups = array(
+    public $ignored_groups = [
       'counts',
       'plugins',
       'themes',
-    );
+    ];
     /**
      * List of groups and their types.
      *
      * @var array
      */
-    public $group_type = array();
+    public $group_type = [];
     /**
      * Prefix used for global groups.
      *
@@ -207,7 +195,7 @@ if ( ! defined( 'WP_SQLITE_OBJECT_CACHE_DISABLED' ) || ! WP_SQLITE_OBJECT_CACHE_
      *
      * @var array
      */
-    protected $global_groups = array(
+    protected $global_groups = [
       'blog-details',
       'blog-id-cache',
       'blog-lookup',
@@ -225,7 +213,7 @@ if ( ! defined( 'WP_SQLITE_OBJECT_CACHE_DISABLED' ) || ! WP_SQLITE_OBJECT_CACHE_
       'usermeta',
       'user_meta',
       'userslugs',
-    );
+    ];
 
     /**
      * @var array One-level associative array $name=>$value
